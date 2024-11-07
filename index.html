@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="zh">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>寻宝游戏</title>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        body {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background-color: #f8f9fa;
+        }
+
+        .center-title {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .center-button {
+            margin: 20px 0;
+            padding: 10px;
+            font-size: 16px;
+            cursor: pointer;
+        }
+
+        #treasure-image {
+            display: none;
+            /* 初始隐藏图片 */
+            width: 80%;
+            /* 可根据需要调整 */
+            max-height: 300px;
+            /* 可根据需要调整 */
+            margin-bottom: 20px;
+        }
+
+        .result-overlay {
+            z-index: 1;
+            width: 80%;
+            max-height: 300px;
+            overflow-y: auto;
+            text-align: center;
+            background-color: rgba(255, 255, 255, 0.8);
+            border-radius: 8px;
+            padding: 20px;
+        }
+
+        .message {
+            opacity: 1;
+            transition: opacity 0.3s ease;
+        }
+    </style>
+</head>
+
+<body>
+    <h1 class="center-title">寻宝游戏</h1>
+    <img id="treasure-image" src="image/image1.jpg" alt="宝藏图片">
+    <button id="start-button" class="center-button">开始寻宝</button>
+    <button id="next-button" class="center-button" style="display:none;">下一步</button>
+    <br>
+    <div id="result" class="result-overlay"></div> <!-- 结果显示区域在按钮下面 -->
+
+    <script src="treasure.js"></script>
+    <script>
+        const images = [
+            "image/image1.jpg",
+            "image/image2.jpg",
+            "image/image3.jpg",
+            "image/image4.jpg",
+            "image/image5.jpg"
+        ];
+
+        let currentStep = 0;
+
+        async function displayResult(message) {
+            const resultDiv = document.getElementById('result');
+            resultDiv.innerHTML = ''; // 清空现有内容
+            const messageDiv = document.createElement('div');
+            messageDiv.className = 'message';
+            messageDiv.innerHTML = message;
+            resultDiv.appendChild(messageDiv);
+        }
+
+        function updateImage(step) {
+            const treasureImage = document.getElementById('treasure-image');
+            treasureImage.src = images[step];
+            treasureImage.style.display = 'block'; // 显示图片
+        }
+
+        async function showNextStep() {
+            if (currentStep < steps.length) {
+                try {
+                    updateImage(currentStep); // 更新图片
+                    const clue = await steps[currentStep](); // 获取当前步骤的结果
+                    displayResult(clue); // 显示结果
+                    currentStep++; // 移动到下一个步骤
+                } catch (error) {
+                    displayResult("任务失败: " + error);
+                    currentStep = steps.length; // 停止后续步骤
+                }
+            } else {
+                displayResult("所有步骤已完成!");
+                document.getElementById('next-button').style.display = 'none'; // 隐藏下一步按钮
+            }
+        }
+
+        async function findTreasure() {
+            steps = [
+                TreasureMap.getInitialClue,
+                TreasureMap.decodeAncientScript,
+                TreasureMap.searchTemple,
+                TreasureMap.findKey,
+                TreasureMap.openTreasureBox
+            ];
+
+            document.getElementById('next-button').style.display = 'block'; // 显示下一步按钮
+            await showNextStep(); // 显示第一步
+        }
+
+        document.getElementById('start-button').addEventListener('click', () => {
+            currentStep = 0; // 重置步骤
+            updateImage(currentStep); // 设置初始图片
+            findTreasure(); // 开始寻宝
+            document.getElementById('result').innerHTML = ''; // 清空结果
+            displayResult("欢迎来到寻宝游戏！点击下一步开始冒险。"); // 显示欢迎信息
+        });
+
+        document.getElementById('next-button').addEventListener('click', showNextStep);
+    </script>
+</body>
+
+</html>
